@@ -66,9 +66,11 @@ class AudioUtil:
         :param audio: The audio signal as a tuple (signal, sample_rate).
         :param newsr: The target sampling frequency.
         """
-        sig, sr = audio
-
         ### TO COMPLETE
+
+        sig, sr = audio
+        M = newsr / sr
+        resig = signal.resample(sig, int(len(sig) * M))
 
         return (resig, newsr)
 
@@ -123,9 +125,10 @@ class AudioUtil:
         :param scaling_limit: The maximum scaling factor.
         """
         sig, sr = audio
-
+        
         ### TO COMPLETE
-
+        sig *= np.random.uniform(0, scaling_limit)
+        audio = (sig, sr)
         return audio
 
     def add_noise(audio, sigma=0.05) -> Tuple[ndarray, int]:
