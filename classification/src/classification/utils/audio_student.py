@@ -141,7 +141,8 @@ class AudioUtil:
         sig, sr = audio
 
         ### TO COMPLETE
-
+        sig += np.random.normal(0, sigma)
+        audio = sig, sr
         return audio
 
     def echo(audio, nechos=2) -> Tuple[ndarray, int]:
@@ -172,8 +173,9 @@ class AudioUtil:
         sig, sr = audio
 
         ### TO COMPLETE
+        sig_filtered = np.convolve(sig, filt) # Not sure about this, use fourier instead, it is faster
        
-        return (sig, sr)
+        return (sig_filtered, sr)
 
     def add_bg(audio, dataset, num_sources=1, max_ms=5000, amplitude_limit=0.1) -> Tuple[ndarray, int]:
         """
@@ -189,8 +191,17 @@ class AudioUtil:
         sig, sr = audio
 
         ### TO COMPLETE
+        max_samples = int(max_ms * sr) 
+        output_signal = np.zeros_like(sig)
+        
+        for _ in range(num_sources):
+            random_sound = np.random.choice(dataset)
+            random_sound = random_sound[:min(len(random_sound), max_samples)]
+            # start_pos = np.random.randint(0, len(output_signal) - len(random_sound))
+            start_pos = 0
+            output_signal[start_pos:start_pos + len(random_sound)] += np.clip(random_sound, -1*amplitude_limit, amplitude_limit)
 
-        return audio
+        return (output_signal, sr)
 
     def specgram(audio, Nft=512, fs2=11025) -> ndarray:
         """
@@ -202,7 +213,8 @@ class AudioUtil:
         """
 
         ### TO COMPLETE
-        # stft /= float(2**8)
+        sig, sr = audio
+        stft = np.abs(librosa.stft(sig, n_fft=Nft, hop_length=Nft, window="rect", center=False))
         return stft
 
     def get_hz2mel(fs2=11025, Nft=512, Nmel=20) -> ndarray:
@@ -230,7 +242,14 @@ class AudioUtil:
         """
 
         ### TO COMPLETE
-
+        y, sr = audio   # Not sure about this
+        fs = sr
+        M = fs//fs2
+        y = signal.resample(y, int(len(y)/M))
+        x = (y, sr)
+        stft = specgram(x, Nft, fs2)
+        mels = librosa.filter.mel(sr=fs2, n_fft=Nft, n_mels=Nmel)
+        melspec = mels @ stft
         return melspec
 
     def spectro_aug_timefreq_masking(
