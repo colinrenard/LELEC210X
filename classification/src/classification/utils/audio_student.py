@@ -184,22 +184,38 @@ class AudioUtil:
         :param audio: The audio signal as a tuple (signal, sample_rate).
         :param dataset: The dataset to sample from.
         :param num_sources: The number of sounds to add.
-        :param max_ms: The maximum duration of the sounds to add.
+        :param max_ms: The maximum duration of the sounds to add. Assumed in ms
         :param amplitude_limit: The maximum amplitude of the added sounds.
+
+        It is assumed that the sample rates of each sound are the same.
         """
 
         sig, sr = audio
 
         ### TO COMPLETE
-        max_samples = int(max_ms * sr) 
         output_signal = np.zeros_like(sig)
-        
+
         for _ in range(num_sources):
-            random_sound = np.random.choice(dataset)
-            random_sound = random_sound[:min(len(random_sound), max_samples)]
-            # start_pos = np.random.randint(0, len(output_signal) - len(random_sound))
+            # random choice in the dataset
+            random_class = np.random.choice(dataset.list_classes())
+            random_index = np.random.randint(0, dataset.naudio)
+            random_sound = dataset.__getitem__([random_class, random_index])
+
+            sound, sr2 = sf.read(random_sound) # opens the file
+            if sound.ndim > 1:
+                sound = sound[:, 0]
+
+            max_samples = int(np.floor(max_ms) * sr2 / 1000)
+            print(len(sound))
+            print(max_samples)
+
+            # It is assumed that sr = sr2
+            sound = sound[:min(min(len(sound), len(sig)), max_samples)] # truncates the signal at least to sig size
+
+            print(len(sound))
+            # start_pos = np.random.randint(0, len(output_signal) - len(sound)) # sets random start position
             start_pos = 0
-            output_signal[start_pos:start_pos + len(random_sound)] += np.clip(random_sound, -1*amplitude_limit, amplitude_limit)
+            output_signal[start_pos:start_pos + len(sound)] += np.clip(sound, -1*amplitude_limit, amplitude_limit)
 
         return (output_signal, sr)
 
