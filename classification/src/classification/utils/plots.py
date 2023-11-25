@@ -30,8 +30,15 @@ def show_confusion_matrix(y_predict, y_true2, classnames, title=""):
     #         mask[j] = (y_predict[j] == classnames[i])
     #     labels[mask] = mode(y_true2[mask])[0]
 
+    """
     confmat = confusion_matrix(
         y_true2, y_predict, labels=np.arange(np.max(y_true2) + 1)
+    )
+    """
+    
+    # Hotfix, I don't quite understand the labels argument. Seems right though.
+    confmat = confusion_matrix( 
+        y_true2, y_predict
     )
     heatmap(
         confmat.T,

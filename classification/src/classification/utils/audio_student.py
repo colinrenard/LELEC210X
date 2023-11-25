@@ -246,9 +246,8 @@ class AudioUtil:
         fs = sr
         M = fs//fs2
         y = signal.resample(y, int(len(y)/M))
-        x = (y, sr)
-        stft = specgram(x, Nft, fs2)
-        mels = librosa.filter.mel(sr=fs2, n_fft=Nft, n_mels=Nmel)
+        stft = np.abs(librosa.stft(y, n_fft=Nft, hop_length=Nft, window="rect", center=False))
+        mels = librosa.filters.mel(sr=fs2, n_fft=Nft, n_mels=Nmel)
         melspec = mels @ stft
         return melspec
 
