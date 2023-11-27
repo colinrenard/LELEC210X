@@ -207,6 +207,11 @@
    type="conduit"
    dir="end" />
  <interface
+   name="fir_compiler_ii_0_clk"
+   internal="fir_compiler_ii_0.clk"
+   type="clock"
+   dir="end" />
+ <interface
    name="ppd"
    internal="packet_presence_detection_0.cfg"
    type="conduit"
@@ -278,9 +283,7 @@
    version="1.0"
    enabled="1">
   <parameter name="DATA_WIDTH" value="12" />
-  <parameter name="LONG_SUM_LEN" value="256" />
   <parameter name="PASSTHROUGH_LEN_WIDTH" value="16" />
-  <parameter name="SHORT_SUM_LEN" value="32" />
  </module>
  <connection
    kind="avalon_streaming"
@@ -297,11 +300,6 @@
    version="18.1"
    start="fir_compiler_ii_0.avalon_streaming_source"
    end="packet_presence_detection_0.avalon_streaming_sink" />
- <connection
-   kind="clock"
-   version="18.1"
-   start="clk_0.clk"
-   end="fir_compiler_ii_0.clk" />
  <connection
    kind="clock"
    version="18.1"
