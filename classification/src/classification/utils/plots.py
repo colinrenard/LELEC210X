@@ -22,24 +22,26 @@ def show_confusion_matrix(y_predict, y_true2, classnames, title=""):
     From target labels and prediction arrays, sort them appropriately and plot confusion matrix.
     The arrays can contain either ints or str quantities, as long as classnames contains all the elements present in them.
     """
-    # # Reorder the prediction array
-    # labels = np.zeros_like(y_predict)
-    # for i in np.arange(len(classnames)):
-    #     mask = [None]*len(y_predict)
-    #     for j in np.arange(len(mask)):
-    #         mask[j] = (y_predict[j] == classnames[i])
-    #     labels[mask] = mode(y_true2[mask])[0]
+    
+    ## Reorder the prediction array
+    #labels = np.zeros_like(y_predict)
+    #for i in np.arange(len(classnames)):
+    #    mask = [None]*len(y_predict)
+    #    for j in np.arange(len(mask)):
+    #        mask[j] = (y_predict[j] == classnames[i])
+    #    labels[mask] = statistics.mode(y_true2[mask])[0]
 
     """
     confmat = confusion_matrix(
         y_true2, y_predict, labels=np.arange(np.max(y_true2) + 1)
     )
-    """
     
+    """
     # Hotfix, I don't quite understand the labels argument. Seems right though.
     confmat = confusion_matrix( 
-        y_true2, y_predict
+        y_true2, y_predict, labels=classnames
     )
+    
     heatmap(
         confmat.T,
         square=True,
