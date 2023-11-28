@@ -4,6 +4,7 @@ uart-reader.py
 ELEC PROJECT - 210x
 """
 import argparse
+import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,6 +17,9 @@ MELVEC_LENGTH = 20
 N_MELVECS = 16
 
 dt = np.dtype(np.uint16).newbyteorder("<")
+
+# Retrive RandomForest model
+model_rf = pickle.load(open('../../classification/data/models/randomforest.pickle', 'rb'))
 
 
 def parse_buffer(line):
@@ -132,3 +136,9 @@ if __name__ == "__main__":
             plt.draw()
             plt.pause(0.001)
             plt.show()
+
+            fv = melvec
+            mat = np.zeros((2, len(fv))) # reshape is needed
+            mat[0] = fv
+            prediction = model_rf.predict(mat)
+            print("Predicted class : ", prediction)
