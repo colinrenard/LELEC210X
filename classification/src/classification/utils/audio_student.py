@@ -24,7 +24,7 @@ class AudioUtil:
     Define a new class with util functions to process an audio signal.
     """
 
-    def open(audio_file) -> Tuple[ndarray, int]:
+    def open(self, audio_file) -> Tuple[ndarray, int]:
         """
         Load an audio file.
 
@@ -37,7 +37,7 @@ class AudioUtil:
             sig = sig[:, 0]
         return (sig, sr)
 
-    def play(audio):
+    def play(self, audio):
         """
         Play an audio file.
 
@@ -46,7 +46,7 @@ class AudioUtil:
         sig, sr = audio
         sd.play(sig, sr)
 
-    def normalize(audio, target_dB=52) -> Tuple[ndarray, int]:
+    def normalize(self, audio, target_dB=52) -> Tuple[ndarray, int]:
         """
         Normalize the energy of the signal.
 
@@ -59,7 +59,7 @@ class AudioUtil:
         sign *= C
         return (sign, sr)
 
-    def resample(audio, newsr=11025) -> Tuple[ndarray, int]:
+    def resample(self, audio, newsr=11025) -> Tuple[ndarray, int]:
         """
         Resample to target sampling frequency.
 
@@ -74,7 +74,7 @@ class AudioUtil:
 
         return (resig, newsr)
 
-    def pad_trunc(audio, max_ms) -> Tuple[ndarray, int]:
+    def pad_trunc(self, audio, max_ms) -> Tuple[ndarray, int]:
         """
         Pad (or truncate) the signal to a fixed length 'max_ms' in milliseconds.
 
@@ -105,7 +105,7 @@ class AudioUtil:
 
         return (sig, sr)
 
-    def time_shift(audio, shift_limit=0.4) -> Tuple[ndarray, int]:
+    def time_shift(self, audio, shift_limit=0.4) -> Tuple[ndarray, int]:
         """
         Shifts the signal to the left or right by some percent. Values at the end are 'wrapped around' to the start of the transformed signal.
 
@@ -117,7 +117,7 @@ class AudioUtil:
         shift_amt = int(random.random() * shift_limit * sig_len)
         return (np.roll(sig, shift_amt), sr)
 
-    def scaling(audio, scaling_limit=5) -> Tuple[ndarray, int]:
+    def scaling(self, audio, scaling_limit=5) -> Tuple[ndarray, int]:
         """
         Augment the audio signal by scaling it by a random factor.
 
@@ -131,7 +131,7 @@ class AudioUtil:
         audio = (sig, sr)
         return audio
 
-    def add_noise(audio, sigma=0.05) -> Tuple[ndarray, int]:
+    def add_noise(self, audio, sigma=0.05) -> Tuple[ndarray, int]:
         """
         Augment the audio signal by adding gaussian noise.
 
@@ -145,7 +145,7 @@ class AudioUtil:
         audio = sig, sr
         return audio
 
-    def echo(audio, nechos=2) -> Tuple[ndarray, int]:
+    def echo(self, audio, nechos=2) -> Tuple[ndarray, int]:
         """
         Add echo to the audio signal by convolving it with an impulse response. The taps are regularly spaced in time and each is twice smaller than the previous one.
 
@@ -163,7 +163,7 @@ class AudioUtil:
         sig = fftconvolve(sig, echo_sig, mode="full")[:sig_len]
         return (sig, sr)
 
-    def filter(audio, filt) -> Tuple[ndarray, int]:
+    def filter(self, audio, filt) -> Tuple[ndarray, int]:
         """
         Filter the audio signal with a provided filter. Note the filter is given for positive frequencies only and is thus symmetrized in the function. 
 
@@ -177,7 +177,7 @@ class AudioUtil:
        
         return (sig_filtered, sr)
 
-    def add_bg(audio, dataset, num_sources=1, max_ms=5000, amplitude_limit=0.1) -> Tuple[ndarray, int]:
+    def add_bg(self, audio, dataset, num_sources=1, max_ms=5000, amplitude_limit=0.1) -> Tuple[ndarray, int]:
         """
         Adds up sounds uniformly chosen at random to audio.
 
@@ -194,32 +194,41 @@ class AudioUtil:
 
         ### TO COMPLETE
         output_signal = np.zeros_like(sig)
+        output_signal = sig
 
         for _ in range(num_sources):
             # random choice in the dataset
             random_class = np.random.choice(dataset.list_classes())
             random_index = np.random.randint(0, dataset.naudio)
             random_sound = dataset.__getitem__([random_class, random_index])
+            
+            print(random_sound)
 
-            sound, sr2 = sf.read(random_sound) # opens the file
-            if sound.ndim > 1:
-                sound = sound[:, 0]
+            sound, sr2 = self.open(random_sound)
 
-            max_samples = int(np.floor(max_ms) * sr2 / 1000)
-            print(len(sound))
-            print(max_samples)
+            max_samples = int(np.floor(max_ms * sr2 / 1000))
 
             # It is assumed that sr = sr2
             sound = sound[:min(min(len(sound), len(sig)), max_samples)] # truncates the signal at least to sig size
+            print(np.max(np.abs(sound)))
+            # Find dividing coefficient
+            if (np.max(np.abs(sound)) != 0):
+                coeff = amplitude_limit / np.max(np.abs(sound))
+        
+                # start_pos = np.random.randint(0, len(output_signal) - len(sound)) # sets random start position
+                start_pos = 0
+                output_signal[start_pos:start_pos + len(sound)] += (sound * coeff)
 
-            print(len(sound))
-            # start_pos = np.random.randint(0, len(output_signal) - len(sound)) # sets random start position
-            start_pos = 0
-            output_signal[start_pos:start_pos + len(sound)] += np.clip(sound, -1*amplitude_limit, amplitude_limit)
+
+                print(len(sound))
+
+
+            print(output_signal)
+        print(output_signal == sig)
 
         return (output_signal, sr)
 
-    def specgram(audio, Nft=512, fs2=11025) -> ndarray:
+    def specgram(self, audio, Nft=512, fs2=11025) -> ndarray:
         """
         Compute a Spectrogram.
 
@@ -233,7 +242,7 @@ class AudioUtil:
         stft = np.abs(librosa.stft(sig, n_fft=Nft, hop_length=Nft, window="rect", center=False))
         return stft
 
-    def get_hz2mel(fs2=11025, Nft=512, Nmel=20) -> ndarray:
+    def get_hz2mel(self, fs2=11025, Nft=512, Nmel=20) -> ndarray:
         """
         Get the hz2mel conversion matrix.
 
@@ -247,7 +256,7 @@ class AudioUtil:
 
         return mels
 
-    def melspectrogram(audio, Nmel=20, Nft=512, fs2=11025) -> ndarray:
+    def melspectrogram(self, audio, Nmel=20, Nft=512, fs2=11025) -> ndarray:
         """
         Generate a Melspectrogram.
 
@@ -262,13 +271,14 @@ class AudioUtil:
         fs = sr
         M = fs//fs2
         y = signal.resample(y, int(len(y)/M))
-        stft = np.abs(librosa.stft(y, n_fft=Nft, hop_length=Nft, window="rect", center=False))
+        audio2 = y, sr
+        stft = self.specgram(audio2, Nft, fs2)
         mels = librosa.filters.mel(sr=fs2, n_fft=Nft, n_mels=Nmel)
         melspec = mels @ stft
         return melspec
 
     def spectro_aug_timefreq_masking(
-        spec, max_mask_pct=0.1, n_freq_masks=1, n_time_masks=1
+        self, spec, max_mask_pct=0.1, n_freq_masks=1, n_time_masks=1
     ) -> ndarray:
         """
         Augment the Spectrogram by masking out some sections of it in both the frequency dimension (ie. horizontal bars) and the time dimension (vertical bars) to prevent overfitting and to help the model generalise better. The masked sections are replaced with the mean value.
@@ -342,15 +352,15 @@ class Feature_vector_DS:
 
         :param cls_index: Class name and index.
         """
-
+        AudioUtilInst = AudioUtil()
         audio_file = self.dataset[cls_index] 
-        aud = AudioUtil.open(audio_file)
-        aud = AudioUtil.resample(aud, self.sr)
-        aud = AudioUtil.time_shift(aud, self.shift_pct)
-        aud = AudioUtil.pad_trunc(aud, self.duration)
+        aud = AudioUtilInst.open(audio_file)
+        aud = AudioUtilInst.resample(aud, self.sr)
+        aud = AudioUtilInst.time_shift(aud, self.shift_pct)
+        aud = AudioUtilInst.pad_trunc(aud, self.duration)
         if self.data_aug is not None:
             if "add_bg" in self.data_aug:
-                aud = AudioUtil.add_bg(
+                aud = AudioUtilInst.add_bg(
                     aud,
                     self.dataset,
                     num_sources=1,
@@ -358,11 +368,11 @@ class Feature_vector_DS:
                     amplitude_limit=0.1,
                 )
             if "echo" in self.data_aug:
-                aud = AudioUtil.add_echo(aud)
+                aud = AudioUtilInst.add_echo(aud)
             if "noise" in self.data_aug:
-                aud = AudioUtil.add_noise(aud, sigma=0.05)
+                aud = AudioUtilInst.add_noise(aud, sigma=0.05)
             if "scaling" in self.data_aug:
-                aud = AudioUtil.scaling(aud, scaling_limit=5)
+                aud = AudioUtilInst.scaling(aud, scaling_limit=5)
 
         # aud = AudioUtil.normalize(aud, target_dB=10)
         aud = (aud[0]/np.max(np.abs(aud[0])), aud[1])
@@ -374,12 +384,13 @@ class Feature_vector_DS:
 
         :param cls_index: Class name and index.
         """
-
+        AudioUtilInst = AudioUtil()
         aud = self.get_audiosignal(cls_index)
-        sgram = AudioUtil.melspectrogram(aud, Nmel=self.nmel, Nft=self.Nft)
+        print(aud)
+        sgram = AudioUtilInst.melspectrogram(aud, Nmel=self.nmel, Nft=self.Nft)
         if self.data_aug is not None:
             if "aug_sgram" in self.data_aug:
-                sgram = AudioUtil.spectro_aug_timefreq_masking(
+                sgram = AudioUtilInst.spectro_aug_timefreq_masking(
                     sgram, max_mask_pct=0.1, n_freq_masks=2, n_time_masks=2
                 )
 
@@ -397,11 +408,12 @@ class Feature_vector_DS:
 
         :param cls_index: Class name and index.
         """
+        AudioUtilInst = AudioUtil()
         audio = self.get_audiosignal(cls_index)
-        AudioUtil.play(audio)
+        AudioUtilInst.play(audio)
         plt.figure(figsize=(4, 3))
         plt.imshow(
-            AudioUtil.melspectrogram(audio, Nmel=self.nmel, Nft=self.Nft),
+            AudioUtilInst.melspectrogram(audio, Nmel=self.nmel, Nft=self.Nft),
             cmap="jet",
             origin="lower",
             aspect="auto",
