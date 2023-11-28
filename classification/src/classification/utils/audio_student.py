@@ -203,7 +203,6 @@ class AudioUtil:
             random_index = np.random.randint(0, dataset.naudio)
             random_sound = dataset.__getitem__([random_class, random_index])
             
-            print(random_sound)
 
             sound, sr2 = self.open(random_sound)
 
@@ -362,7 +361,7 @@ class Feature_vector_DS:
                     amplitude_limit=0.1,
                 )
             if "echo" in self.data_aug:
-                aud = AudioUtilInst.add_echo(aud)
+                aud = AudioUtilInst.echo(aud)
             if "noise" in self.data_aug:
                 aud = AudioUtilInst.add_noise(aud, sigma=0.05)
             if "scaling" in self.data_aug:
