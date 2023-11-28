@@ -194,7 +194,8 @@ class AudioUtil:
 
         ### TO COMPLETE
         output_signal = np.zeros_like(sig)
-        output_signal = sig
+        for i in range(len(sig)):
+            output_signal[i] += sig[i]
 
         for _ in range(num_sources):
             # random choice in the dataset
@@ -210,21 +211,14 @@ class AudioUtil:
 
             # It is assumed that sr = sr2
             sound = sound[:min(min(len(sound), len(sig)), max_samples)] # truncates the signal at least to sig size
-            print(np.max(np.abs(sound)))
+
             # Find dividing coefficient
             if (np.max(np.abs(sound)) != 0):
                 coeff = amplitude_limit / np.max(np.abs(sound))
-        
                 # start_pos = np.random.randint(0, len(output_signal) - len(sound)) # sets random start position
                 start_pos = 0
+
                 output_signal[start_pos:start_pos + len(sound)] += (sound * coeff)
-
-
-                print(len(sound))
-
-
-            print(output_signal)
-        print(output_signal == sig)
 
         return (output_signal, sr)
 
@@ -386,7 +380,6 @@ class Feature_vector_DS:
         """
         AudioUtilInst = AudioUtil()
         aud = self.get_audiosignal(cls_index)
-        print(aud)
         sgram = AudioUtilInst.melspectrogram(aud, Nmel=self.nmel, Nft=self.Nft)
         if self.data_aug is not None:
             if "aug_sgram" in self.data_aug:
