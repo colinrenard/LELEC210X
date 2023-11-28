@@ -1,7 +1,6 @@
 options:
   parameters:
     author: UCLouvain
-    catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
@@ -148,7 +147,19 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: misc/fsk_capture.mat
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+    file: /home/colin/LELEC210X/LELEC210X_H/telecom/hands_on_measurements/gr-fsk/data/testrecord.mat
+=======
+    file: /home/colin/LELEC210X/LELEC210X_H/telecom/hands_on_measurements/gr-fsk/misc/fsk_capture.mat
+>>>>>>> fc607c1 (Hands On 3b step 2.2)
+=======
+    file: /home/colin/LELEC210X/LELEC210X_H/telecom/hands_on_measurements/gr-fsk/data/testrecord.mat
+>>>>>>> 7d51984 (HandsOn3b end)
+=======
+    file: /home/colin/LELEC210X/LELEC210X_H/telecom/hands_on_measurements/gr-fsk/data/testrecord.mat
+>>>>>>> e9d869fc335fa1630213bb1270206efea7efbfa6
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -294,7 +305,6 @@ blocks:
     alias: ''
     comment: ''
     hwm: '-1'
-    key: ''
     pass_tags: 'False'
     timeout: '100'
     type: byte

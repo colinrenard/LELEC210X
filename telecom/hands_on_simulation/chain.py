@@ -23,13 +23,13 @@ class Chain:
     payload_len = 50  # Number of bits per packet
 
     ## Simulation parameters
-    n_packets = 100  # Number of sent packets
+    n_packets = 100 #100  # Number of sent packets
 
     ## Channel parameters
     sto_val = 0
     sto_range = 10 / BIT_RATE  # defines the delay range when random
 
-    cfo_val = 0
+    cfo_val = 10 #0
     cfo_range = 10000  # defines the CFO range when random (in Hz) #(1000 in old repo)
 
     snr_range = np.arange(-10, 25)
@@ -119,6 +119,9 @@ class Chain:
 
 
 class BasicChain(Chain):
+
+    n_packets = 500
+    
     name = "Basic Tx/Rx chain"
 
     cfo_val, sto_val = np.nan, np.nan  # CFO and STO are random
@@ -139,17 +142,33 @@ class BasicChain(Chain):
 
         return None
 
-    bypass_cfo_estimation = True
+    bypass_cfo_estimation = False
 
     def cfo_estimation(self, y):
         """
         Estimates CFO using Moose algorithm, on first samples of preamble.
         """
+
+        # cfo_est = 0  # Default value, to change
+
+
         # TO DO: extract 2 blocks of size N*R at the start of y
+
+        R = self.osr_rx  # Oversampling factor
+        N = 2
+        Nt = N*R
+        T = 1/self.bit_rate
+
+        y1 = y[0:R*N]
+        y2 = y[R*N:2*R*N]
 
         # TO DO: apply the Moose algorithm on these two blocks to estimate the CFO
 
-        cfo_est = 0  # Default value, to change
+        sum = 0 
+        for l in range(Nt):
+            sum += y2[l]*np.conjugate(y1[l])
+
+        cfo_est = np.angle(sum)/(2*np.pi*Nt*T/R)
 
         return cfo_est
 
@@ -190,10 +209,30 @@ class BasicChain(Chain):
         # TO DO: generate the reference waveforms used for the correlation
         # hint: look at what is done in modulate() in chain.py
 
+        bits_hat = np.zeros(nb_syms, dtype=int) 
+
+
+        fd = self.freq_dev  # Frequency deviation, Delta_f
+        B = self.bit_rate  # B=1/T
+        ph0 = 2 * np.pi * fd * (np.arange(R) / R) / B       # Phase of reference waveform for r0
+        ph1 =  - 2 * np.pi * fd * (np.arange(R) / R) / B    # Phase of reference waveform for r1
+
         # TO DO: compute the correlations with the two reference waveforms (r0 and r1)
 
-        # TO DO: performs the decision based on r0 and r1
+        for k in range(nb_syms): # For each symbol
+            r0 = 0; r1 = 0
+            for n in range(R):
+                r0 += y[k, n] * np.exp(1j * ph0[n])
+                r1 += y[k, n] * np.exp(1j * ph1[n])
+            r0 = r0/R; r1 = r1/R
 
-        bits_hat = np.zeros(nb_syms, dtype=int)  # Default value, all bits=0. TO CHANGE!
+            # TO DO: performs the decision based on r0 and r1
+
+            if np.abs(r0) > np.abs(r1) : 
+                bits_hat[k] = 0
+            else :
+                bits_hat[k] = 1
+
+        # bits_hat = bits_hat.astype(int)
 
         return bits_hat

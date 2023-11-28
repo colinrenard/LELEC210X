@@ -141,7 +141,8 @@ class AudioUtil:
         sig, sr = audio
 
         ### TO COMPLETE
-
+        sig += np.random.normal(0, sigma)
+        audio = sig, sr
         return audio
 
     def echo(audio, nechos=2) -> Tuple[ndarray, int]:
@@ -172,8 +173,9 @@ class AudioUtil:
         sig, sr = audio
 
         ### TO COMPLETE
+        sig_filtered = np.convolve(sig, filt) # Not sure about this, use fourier instead, it is faster
        
-        return (sig, sr)
+        return (sig_filtered, sr)
 
     def add_bg(audio, dataset, num_sources=1, max_ms=5000, amplitude_limit=0.1) -> Tuple[ndarray, int]:
         """
@@ -182,15 +184,40 @@ class AudioUtil:
         :param audio: The audio signal as a tuple (signal, sample_rate).
         :param dataset: The dataset to sample from.
         :param num_sources: The number of sounds to add.
-        :param max_ms: The maximum duration of the sounds to add.
+        :param max_ms: The maximum duration of the sounds to add. Assumed in ms
         :param amplitude_limit: The maximum amplitude of the added sounds.
+
+        It is assumed that the sample rates of each sound are the same.
         """
 
         sig, sr = audio
 
         ### TO COMPLETE
+        output_signal = np.zeros_like(sig)
 
-        return audio
+        for _ in range(num_sources):
+            # random choice in the dataset
+            random_class = np.random.choice(dataset.list_classes())
+            random_index = np.random.randint(0, dataset.naudio)
+            random_sound = dataset.__getitem__([random_class, random_index])
+
+            sound, sr2 = sf.read(random_sound) # opens the file
+            if sound.ndim > 1:
+                sound = sound[:, 0]
+
+            max_samples = int(np.floor(max_ms) * sr2 / 1000)
+            print(len(sound))
+            print(max_samples)
+
+            # It is assumed that sr = sr2
+            sound = sound[:min(min(len(sound), len(sig)), max_samples)] # truncates the signal at least to sig size
+
+            print(len(sound))
+            # start_pos = np.random.randint(0, len(output_signal) - len(sound)) # sets random start position
+            start_pos = 0
+            output_signal[start_pos:start_pos + len(sound)] += np.clip(sound, -1*amplitude_limit, amplitude_limit)
+
+        return (output_signal, sr)
 
     def specgram(audio, Nft=512, fs2=11025) -> ndarray:
         """
@@ -202,7 +229,8 @@ class AudioUtil:
         """
 
         ### TO COMPLETE
-        # stft /= float(2**8)
+        sig, sr = audio
+        stft = np.abs(librosa.stft(sig, n_fft=Nft, hop_length=Nft, window="rect", center=False))
         return stft
 
     def get_hz2mel(fs2=11025, Nft=512, Nmel=20) -> ndarray:
@@ -230,7 +258,13 @@ class AudioUtil:
         """
 
         ### TO COMPLETE
-
+        y, sr = audio   # Not sure about this
+        fs = sr
+        M = fs//fs2
+        y = signal.resample(y, int(len(y)/M))
+        stft = np.abs(librosa.stft(y, n_fft=Nft, hop_length=Nft, window="rect", center=False))
+        mels = librosa.filters.mel(sr=fs2, n_fft=Nft, n_mels=Nmel)
+        melspec = mels @ stft
         return melspec
 
     def spectro_aug_timefreq_masking(

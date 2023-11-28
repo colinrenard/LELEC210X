@@ -13,10 +13,10 @@
    <endaddress preferredWidth="30" />
   </columns>
  </systemtable>
- <library expandedCategories="Project/LELEC2102_IPs,Library,Project" />
- <window width="1938" height="1038" x="-9" y="-9" />
+ <library expandedCategories="Library/DSP/Filters,Library,Project,Library/DSP" />
+ <window width="1848" height="1030" x="72" y="27" />
  <generation
-   path="_PROJECT_NAME_/"
+   path="LimeSDR-Mini_lms7_lelec210x/_PROJECT_NAME_/"
    testbench_system="STANDARD"
    testbench_simulation="VERILOG"
    greybox="1"

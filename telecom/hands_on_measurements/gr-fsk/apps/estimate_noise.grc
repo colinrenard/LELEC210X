@@ -68,7 +68,7 @@ blocks:
     start: '0'
     step: '1'
     stop: '70'
-    value: '70'
+    value: '60'
     widget: counter_slider
   states:
     bus_sink: false
@@ -113,6 +113,7 @@ blocks:
     analog_bandw_ch1: ''
     calibr_bandw_ch0: ''
     calibr_bandw_ch1: ''
+    ch_align: 'False'
     channel_mode: '0'
     comment: ''
     dacVal: '180'

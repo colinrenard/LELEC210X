@@ -37,6 +37,8 @@ mcu/Debug/
 mcu/Release/
 mcu/.settings/
 mcu/*.launch
+mcu/*.mxproject
+mcu/*mxproject
 
 # Telecom
 
@@ -88,3 +90,11 @@ fpga/*/simulation/
 fpga/*/timing/
 fpga/*/*_sim/
 fpga/incremental_db/
+
+.metadata/
+
+fpga/LimeSDR-Mini_lms7_lelec210x/LimeSDR-Mini_lms7_lelec210x/lms_dsp/simulation/
+
+fpga/LimeSDR-Mini_lms7_lelec210x/LimeSDR-Mini_lms7_lelec210x/ip/packet_presence_detection/testbench/packet_presence_detection_tb_gen_tb/simulation/
+
+telecom/.project
