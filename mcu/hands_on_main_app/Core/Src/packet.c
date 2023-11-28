@@ -22,8 +22,8 @@ void tag_cbc_mac(uint8_t *tag, const uint8_t *msg, size_t msg_len) {
 	uint8_t *state = (uint8_t*) statew;
     size_t i;
 
-
     // TO DO : Complete the CBC-MAC_AES
+
 
     // Copy the result of CBC-MAC-AES to the tag.
     for (int j=0; j<16; j++) {
@@ -35,9 +35,9 @@ void tag_cbc_mac(uint8_t *tag, const uint8_t *msg, size_t msg_len) {
 int make_packet(uint8_t *packet, size_t payload_len, uint8_t sender_id, uint32_t serial) {
     size_t packet_len = payload_len + PACKET_HEADER_LENGTH + PACKET_TAG_LENGTH;
     // Initially, the whole packet header is set to 0s
-    memset(packet, 0, PACKET_HEADER_LENGTH);
+    //memset(packet, 0, PACKET_HEADER_LENGTH);
     // So is the tag
-	memset(packet + payload_len + PACKET_HEADER_LENGTH, 0, PACKET_TAG_LENGTH);
+	//memset(packet + payload_len + PACKET_HEADER_LENGTH, 0, PACKET_TAG_LENGTH);
 
 	// TO DO :  replace the two previous command by properly
 	//			setting the packet header with the following structure :
@@ -58,6 +58,16 @@ int make_packet(uint8_t *packet, size_t payload_len, uint8_t sender_id, uint32_t
 	 *		 		- and operator (&) with hex value, e.g.to perform 0xFF
 	 *		 	This will be helpful when setting fields that are on multiple bytes.
 	*/
+    // HandsOn5
+	packet[0] = 0;
+	packet[1] = sender_id;
+	packet[2] = (payload_len >> 8) & 0xFF;
+	packet[3] = (payload_len) & 0xFF;
+	packet[4] = (serial>>24) & 0xFF;
+	packet[5] = (serial>>16) & 0xFF;
+	packet[6] = (serial>>8) & 0xFF;
+	packet[7] = (serial) & 0xFF;
+
 
 	// For the tag field, you have to calculate the tag. The function call below is correct but
 	// tag_cbc_mac function, calculating the tag, is not implemented.

@@ -37,6 +37,8 @@ mcu/Debug/
 mcu/Release/
 mcu/.settings/
 mcu/*.launch
+mcu/*.mxproject
+mcu/*mxproject
 
 # Telecom
 
