@@ -141,9 +141,10 @@ class AudioUtil:
         sig, sr = audio
 
         ### TO COMPLETE
-        sig += np.random.normal(0, sigma)
-        audio = sig, sr
-        return audio
+        noise = np.random.normal(0, sigma, sig.shape)
+        sig += noise
+        
+        return sig, sr
 
     def echo(self, audio, nechos=2) -> Tuple[ndarray, int]:
         """
@@ -203,7 +204,6 @@ class AudioUtil:
             random_index = np.random.randint(0, dataset.naudio)
             random_sound = dataset.__getitem__([random_class, random_index])
             
-
             sound, sr2 = self.open(random_sound)
 
             max_samples = int(np.floor(max_ms * sr2 / 1000))
