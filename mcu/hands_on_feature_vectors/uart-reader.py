@@ -14,7 +14,7 @@ from serial.tools import list_ports
 PRINT_PREFIX = "DF:HEX:"
 FREQ_SAMPLING = 10200
 MELVEC_LENGTH = 20
-N_MELVECS = 16
+N_MELVECS = 10
 
 dt = np.dtype(np.uint16).newbyteorder("<")
 
@@ -136,9 +136,8 @@ if __name__ == "__main__":
             plt.draw()
             plt.pause(0.001)
             plt.show()
-
             fv = melvec
             mat = np.zeros((2, len(fv))) # reshape is needed
             mat[0] = fv
             prediction = model_rf.predict(mat)
-            print("Predicted class : ", prediction)
+            print("Predicted class : ", prediction[0])
