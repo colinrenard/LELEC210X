@@ -101,6 +101,8 @@ def plot_specgram(
 
 
 if __name__ == "__main__":
+    cpt = 0
+    probas = np.zeros((3, 5))
     argParser = argparse.ArgumentParser()
     argParser.add_argument("-p", "--port", help="Port for serial communication")
     args = argParser.parse_args()
@@ -123,7 +125,6 @@ if __name__ == "__main__":
 
         for melvec in input_stream:
             msg_counter += 1
-
             print("MEL Spectrogram #{}".format(msg_counter))
 
             f, ax = plt.subplots(1, 1, figsize=(10, 5))
@@ -133,11 +134,27 @@ if __name__ == "__main__":
                 is_mel=True,
                 title="MEL Spectrogram #{}".format(msg_counter),
             )
-            plt.draw()
-            plt.pause(0.001)
-            plt.show()
+            # plt.draw()
+            # plt.pause(0.001)
+            # plt.show()
             fv = melvec
             mat = np.zeros((2, len(fv))) # reshape is needed
             mat[0] = fv
             prediction = model_rf.predict(mat)
+            probas[cpt,:] = model_rf.predict_proba(mat)[0]
+            print(probas)
+            cpt+=1
+            if cpt == 3:
+                cpt = 0
+                classnames = ["birds", "chainsaw", "fire", "hansaw", "helicopter"]
+                plt.figure()
+                plt.title("Prediction of three samples from the fire class")
+                for window in range(3):
+                    plt.bar(np.arange(len(classnames))*2*3+window, probas[window,:], alpha=0.9, label='Sound {}'.format(window+1))
+                plt.legend()
+                plt.gca().set_xticks(np.arange(len(classnames))*2*3+1)
+                plt.gca().set_xticklabels(classnames)
+                plt.ylabel("Probability [-]")
+                plt.show()
+                probas = np.zeros((3, 5))
             print("Predicted class : ", prediction[0])
