@@ -23,7 +23,31 @@ void tag_cbc_mac(uint8_t *tag, const uint8_t *msg, size_t msg_len) {
     size_t i;
 
     // TO DO : Complete the CBC-MAC_AES
+    i = msg_len / 16;
+    int mod = msg_len % 16;
 
+    for (int j=0; j<i; j++) {
+
+    	for (int k=0; k < 16; k++) {
+    		state[k] = state[k] ^ msg[j*16+k];
+    	}
+
+		AES128_encrypt(state, tag);
+    }
+
+    if (mod != 0) {
+    	uint8_t buf[16] = {0};
+
+    	for (int k=0; k<mod; k++) {
+    		buf[k] = msg[(i+1)*16+k];
+    	}
+
+    	for (int k=0; k < 16; k++) {
+    	    state[k] = state[k] ^ buf[k];
+    	}
+
+    	AES128_encrypt(state, tag);
+    }
 
     // Copy the result of CBC-MAC-AES to the tag.
     for (int j=0; j<16; j++) {
