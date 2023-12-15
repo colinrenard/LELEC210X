@@ -13,7 +13,7 @@ py_version = 38
 authors = ["LELEC210X teaching assistants"]
 description = ""
 name = "LELEC210X"
-packages = [{include = "auth", from = "auth/src"}, {include = "classification", from = "classification/src"}, {include = "common", from = "common/src"}, {include = "leaderboard", from = "leaderboard/src"}]
+packages = [{include = "auth", from = "auth/src"}, {include = "classification", from = "classification/src"}, {include = "common", from = "common/src"}]
 readme = "README.md"
 version = "0.1.0"
 

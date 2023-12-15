@@ -52,7 +52,7 @@ blocks:
     bus_structure: null
     coordinate: [1111, 19]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: K_threshold
   id: variable
   parameters:
@@ -64,7 +64,7 @@ blocks:
     bus_structure: null
     coordinate: [1313, 22]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: carrier_freq
   id: variable
   parameters:
@@ -117,7 +117,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 1e-06
+    value: '3.95e-07'
   states:
     bus_sink: false
     bus_source: false
@@ -193,19 +193,19 @@ blocks:
     bus_structure: null
     coordinate: [984, 20]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: rx_gain
   id: variable
   parameters:
     comment: ''
-    value: '15'
+    value: '10'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
     coordinate: [1345, 91]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: samp_rate
   id: variable
   parameters:
@@ -385,7 +385,7 @@ blocks:
     bus_structure: null
     coordinate: [64, 356.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: zeromq_pub_sink_0
   id: zeromq_pub_sink
   parameters:
