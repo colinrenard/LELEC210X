@@ -121,5 +121,7 @@ if __name__ == "__main__":
 
     else:
         input_stream = reader(port=args.port)
+        for melvec in input_stream:
+            print(melvec)
 
     
