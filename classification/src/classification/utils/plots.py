@@ -39,7 +39,7 @@ def show_confusion_matrix(y_predict, y_true, classnames, title=""):
     """
     # Hotfix, I don't quite understand the labels argument. Seems right though.
     confmat = confusion_matrix( 
-        y_true2, y_predict, labels=classnames
+        y_true, y_predict, labels=classnames
     )
     
     heatmap(
