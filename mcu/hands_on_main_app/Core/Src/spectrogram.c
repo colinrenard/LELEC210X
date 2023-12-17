@@ -1,19 +1,21 @@
 /*
  * spectrogram.c
  *
- *  Created on: Jun 4, 2021
- *      Author: math
+ *  Created on: Oct 7, 2021
+ *      Author: Teaching Assistants of LELEC210x
  */
 
-#include <stdio.h>
 #include "spectrogram.h"
 #include "spectrogram_tables.h"
 #include "config.h"
-#include "utils.h"
+#include "arm_math.h"
 #include "arm_absmax_q15.h"
 
+extern void start_cycle_count();
+extern void stop_cycle_count(char *s);
+
 q15_t buf    [  SAMPLES_PER_MELVEC  ]; // Windowed samples
-q15_t buf_fft[2*SAMPLES_PER_MELVEC  ]; // Double size (real|imag) buffer needed for arm_rfft_q15
+q15_t buf_fft[2*SAMPLES_PER_MELVEC  ]; // Double size (real|imag) buffer for arm_rfft_q15
 q15_t buf_tmp[  SAMPLES_PER_MELVEC/2]; // Intermediate buffer for arm_mat_mult_fast_q15
 
 // Convert 12-bit DC ADC samples to Q1.15 fixed point signal and remove DC component
@@ -21,8 +23,8 @@ void Spectrogram_Format(q15_t *buf)
 {
 	// STEP 0.1 : Increase fixed-point scale
 	//            --> Pointwise shift
-	//            Complexity: O(N)
-	//            Number of cycles: <TODO>
+	//            Complexity: O(N_FT) , N_FT SAMPLES_PER_MELVEC
+	//            Number of cycles: 3661
 
 	// The output of the ADC is stored in an unsigned 12-bit format, so buf[i] is in [0 , 2**12 - 1]
 	// In order to better use the scale of the signed 16-bit format (1 bit of sign and 15 integer bits), we can multiply by 2**(15-12) = 2**3
@@ -31,19 +33,31 @@ void Spectrogram_Format(q15_t *buf)
 	// /!\ When multiplying/dividing by a power 2, always prefer shifting left/right instead, ARM instructions to do so are more efficient.
 	// Here we should shift left by 3.
 
+	start_cycle_count();
 	arm_shift_q15(buf, 3, buf, SAMPLES_PER_MELVEC);
+	stop_cycle_count("Step_0.1");
 
 	// STEP 0.2 : Remove DC Component
 	//            --> Pointwise substract
-	//            Complexity: O(N)
-	//            Number of cycles: <TODO>
+	//            Complexity: O(N_FT)
+	//            Number of cycles: <15912>
 
 	// Since we use a signed representation, we should now center the value around zero, we can do this by substracting 2**14.
 	// Now the value of buf[i] is in [-2**14 , 2**14 - 1]
 
-	for(uint16_t i=0; i < SAMPLES_PER_MELVEC; i++) { // Remove DC component
-		buf[i] -= (1 << 14);
+	// [?] Why don't we use the full scale of the 16-bit?
+	// Are we done computing things with this array ?
+	// What would happen if we used the full scale and do, for example, a multiplication between two values?
+
+	start_cycle_count();
+	const uint16_t DC_VALUE = 1u << 14;
+	for(uint16_t i=0; i < SAMPLES_PER_MELVEC; i++)
+	{
+		// Remove DC component
+		buf[i] -= DC_VALUE;
 	}
+	stop_cycle_count("Step_0.2");
+
 }
 
 // Compute spectrogram of samples and transform into MEL vectors.
@@ -51,66 +65,85 @@ void Spectrogram_Compute(q15_t *samples, q15_t *melvec)
 {
 	// STEP 1  : Windowing of input samples
 	//           --> Pointwise product
-	//           Complexity: O(N)
-	//           Number of cycles: <TODO>
+	//           Complexity: O(N_FT)
+	//           Number of cycles: 3923
+	start_cycle_count();
 	arm_mult_q15(samples, hamming_window, buf, SAMPLES_PER_MELVEC);
+	stop_cycle_count("Step_1");
 
 	// STEP 2  : Discrete Fourier Transform
 	//           --> In-place Fast Fourier Transform (FFT) on a real signal
 	//           --> For our spectrogram, we only keep only positive frequencies (symmetry) in the next operations.
-	//           Complexity: O(Nlog(N))
-	//           Number of cycles: <TODO>
+	//           Complexity: O(N_FT*log(N_FT))
+	//           Number of cycles: 23159
 
 	// Since the FFT is a recursive algorithm, the values are rescaled in the function to ensure that overflow cannot happen.
+	start_cycle_count();
 	arm_rfft_instance_q15 rfft_inst;
 
 	arm_rfft_init_q15(&rfft_inst, SAMPLES_PER_MELVEC, 0, 1);
 
 	arm_rfft_q15(&rfft_inst, buf, buf_fft);
+	stop_cycle_count("Step_2");
 
 	// STEP 3  : Compute the complex magnitude of the FFT
 	//           Because the FFT can output a great proportion of very small values,
 	//           we should rescale all values by their maximum to avoid loss of precision when computing the complex magnitude
 	//           In this implementation, we use integer division and multiplication to rescale values, which are very costly.
+	//           [?] Is there a more efficient way to this using only shifting ?
 
 	// STEP 3.1: Find the extremum value (maximum of absolute values)
-	//           Complexity: O(N)
-	//           Number of cycles: <TODO>
+	//           Complexity: O(N_FT)
+	//           Number of cycles: 14592
+
+	start_cycle_count();
 
 	q15_t vmax;
 	uint32_t pIndex=0;
 
+
 	arm_absmax_q15(buf_fft, SAMPLES_PER_MELVEC, &vmax, &pIndex);
+	stop_cycle_count("Step_3.1");
 
-	// STEP 3.2: Normalize the vector - Dynamic range increase
-	//           Complexity: O(N)
-	//           Number of cycles: <TODO>
+	// STEP 3.2: Normalize the vector
+	//           Complexity: O(N_FT)
+	//           Number of cycles:16317
 
-	for (int i=0; i < SAMPLES_PER_MELVEC; i++) // We don't use the second half of the symmetric spectrum
+	start_cycle_count();
+
+	for (int i=0; i < SAMPLES_PER_MELVEC; i++)
 	{
-		buf[i] = (q15_t) (((q31_t) buf_fft[i] << 15) /((q31_t)vmax));
+		buf[i] = (q15_t) (((q31_t) buf_fft[i] << 15) / ((q31_t) vmax));
 	}
+
+	stop_cycle_count("Step_3.2");
 
 	// STEP 3.3: Compute the complex magnitude
 	//           --> The output buffer is now two times smaller because (real|imag) --> (mag)
-	//           Complexity: O(N)
-	//           Number of cycles: <TODO>
+	//           Complexity: O(N_FT) -- Note : a améliorer avec approx vue partie télécom.
+	//           Number of cycles: 16972
 
-	arm_cmplx_mag_q15(buf, buf, SAMPLES_PER_MELVEC/2);
+	start_cycle_count();
+	arm_cmplx_mag_q15(buf, buf, SAMPLES_PER_MELVEC / 2);
+
+	stop_cycle_count("Step_3.3");
 
 	// STEP 3.4: Denormalize the vector
-	//           Complexity: O(N)
-	//           Number of cycles: <TODO>
+	//           Complexity: O(N_FT)
+	//           Number of cycles: 6440
 
-	for (int i=0; i < SAMPLES_PER_MELVEC/2; i++)
+	start_cycle_count();
+	for (int i=0; i < SAMPLES_PER_MELVEC / 2; i++)
 	{
 		buf[i] = (q15_t) ((((q31_t) buf[i]) * ((q31_t) vmax) ) >> 15 );
 	}
 
+	stop_cycle_count("Step_3.4");
+
 	// STEP 4:   Apply MEL transform
 	//           --> Fast Matrix Multiplication
-	//           Complexity: O(Nmel*N)
-	//           Number of cycles: <TODO>
+	//           Complexity: O(N_MEL * N_FT) -- Note : A AMELIORER -> stocker indices et valeurs et faire la fonction
+	//           Number of cycles: 20891
 
 	// /!\ The difference between the function arm_mat_mult_q15() and the fast variant is that the fast variant use a 32-bit rather than a 64-bit accumulator.
 	// The result of each 1.15 x 1.15 multiplication is truncated to 2.30 format. These intermediate results are accumulated in a 32-bit register in 2.30 format.
@@ -119,12 +152,14 @@ void Spectrogram_Compute(q15_t *samples, q15_t *melvec)
 
 	// /!\ In order to avoid overflows completely the input signals should be scaled down. Scale down one of the input matrices by log2(numColsA) bits to avoid overflows,
 	// as a total of numColsA additions are computed internally for each output element. Because our hz2mel_mat matrix contains lots of zeros in its rows, this is not necessary.
-	
+	start_cycle_count();
 	arm_matrix_instance_q15 hz2mel_inst, fftmag_inst, melvec_inst;
 
-	arm_mat_init_q15(&hz2mel_inst, MELVEC_LENGTH, SAMPLES_PER_MELVEC/2, hz2mel_mat);
-	arm_mat_init_q15(&fftmag_inst, SAMPLES_PER_MELVEC/2, 1, buf);
-	arm_mat_init_q15(&melvec_inst, MELVEC_LENGTH, 1, melvec);
+	arm_mat_init_q15(&hz2mel_inst, MELVEC_LENGTH,          SAMPLES_PER_MELVEC / 2, hz2mel_mat);
+	arm_mat_init_q15(&fftmag_inst, SAMPLES_PER_MELVEC / 2, 1,                      buf);
+	arm_mat_init_q15(&melvec_inst, MELVEC_LENGTH,          1,                      melvec);
 
 	arm_mat_mult_fast_q15(&hz2mel_inst, &fftmag_inst, &melvec_inst, buf_tmp);
+	stop_cycle_count("Step_4");
 }
+
