@@ -61,6 +61,8 @@ def main(
             melvecs = payload_to_melvecs(payload, melvec_length, n_melvecs)
             logger.info(f"Parsed payload into Mel vectors: {melvecs}")
 
+            print(melvecs)
+
             if m:
                 # TODO: perform classification
                 pass
