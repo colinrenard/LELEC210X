@@ -8,6 +8,7 @@ import sounddevice as sd
 import soundfile as sf
 from numpy import ndarray
 from scipy.signal import fftconvolve
+from scipy import signal
 
 # -----------------------------------------------------------------------------
 """
