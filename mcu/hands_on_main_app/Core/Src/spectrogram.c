@@ -33,9 +33,9 @@ void Spectrogram_Format(q15_t *buf)
 	// /!\ When multiplying/dividing by a power 2, always prefer shifting left/right instead, ARM instructions to do so are more efficient.
 	// Here we should shift left by 3.
 
-	start_cycle_count();
+	//start_cycle_count();
 	arm_shift_q15(buf, 3, buf, SAMPLES_PER_MELVEC);
-	stop_cycle_count("Step_0.1");
+	//stop_cycle_count("Step_0.1");
 
 	// STEP 0.2 : Remove DC Component
 	//            --> Pointwise substract
@@ -49,14 +49,14 @@ void Spectrogram_Format(q15_t *buf)
 	// Are we done computing things with this array ?
 	// What would happen if we used the full scale and do, for example, a multiplication between two values?
 
-	start_cycle_count();
+	//start_cycle_count();
 	const uint16_t DC_VALUE = 1u << 14;
 	for(uint16_t i=0; i < SAMPLES_PER_MELVEC; i++)
 	{
 		// Remove DC component
 		buf[i] -= DC_VALUE;
 	}
-	stop_cycle_count("Step_0.2");
+	//stop_cycle_count("Step_0.2");
 
 }
 
@@ -67,9 +67,9 @@ void Spectrogram_Compute(q15_t *samples, q15_t *melvec)
 	//           --> Pointwise product
 	//           Complexity: O(N_FT)
 	//           Number of cycles: 3923
-	start_cycle_count();
+	//start_cycle_count();
 	arm_mult_q15(samples, hamming_window, buf, SAMPLES_PER_MELVEC);
-	stop_cycle_count("Step_1");
+	//stop_cycle_count("Step_1");
 
 	// STEP 2  : Discrete Fourier Transform
 	//           --> In-place Fast Fourier Transform (FFT) on a real signal
@@ -78,13 +78,13 @@ void Spectrogram_Compute(q15_t *samples, q15_t *melvec)
 	//           Number of cycles: 23159
 
 	// Since the FFT is a recursive algorithm, the values are rescaled in the function to ensure that overflow cannot happen.
-	start_cycle_count();
+	//start_cycle_count();
 	arm_rfft_instance_q15 rfft_inst;
 
 	arm_rfft_init_q15(&rfft_inst, SAMPLES_PER_MELVEC, 0, 1);
 
 	arm_rfft_q15(&rfft_inst, buf, buf_fft);
-	stop_cycle_count("Step_2");
+	//stop_cycle_count("Step_2");
 
 	// STEP 3  : Compute the complex magnitude of the FFT
 	//           Because the FFT can output a great proportion of very small values,
@@ -96,14 +96,14 @@ void Spectrogram_Compute(q15_t *samples, q15_t *melvec)
 	//           Complexity: O(N_FT)
 	//           Number of cycles: 14592
 
-	start_cycle_count();
+	//start_cycle_count();
 
 	q15_t vmax;
 	uint32_t pIndex=0;
 
 
 	arm_absmax_q15(buf_fft, SAMPLES_PER_MELVEC, &vmax, &pIndex);
-	stop_cycle_count("Step_3.1");
+	//stop_cycle_count("Step_3.1");
 
 	// STEP 3.2: Normalize the vector
 	//           Complexity: O(N_FT)
@@ -123,22 +123,22 @@ void Spectrogram_Compute(q15_t *samples, q15_t *melvec)
 	//           Complexity: O(N_FT) -- Note : a améliorer avec approx vue partie télécom.
 	//           Number of cycles: 16972
 
-	start_cycle_count();
+	//start_cycle_count();
 	arm_cmplx_mag_q15(buf, buf, SAMPLES_PER_MELVEC / 2);
 
-	stop_cycle_count("Step_3.3");
+	//stop_cycle_count("Step_3.3");
 
 	// STEP 3.4: Denormalize the vector
 	//           Complexity: O(N_FT)
 	//           Number of cycles: 6440
 
-	start_cycle_count();
+	//start_cycle_count();
 	for (int i=0; i < SAMPLES_PER_MELVEC / 2; i++)
 	{
 		buf[i] = (q15_t) ((((q31_t) buf[i]) * ((q31_t) vmax) ) >> 15 );
 	}
 
-	stop_cycle_count("Step_3.4");
+	//stop_cycle_count("Step_3.4");
 
 	// STEP 4:   Apply MEL transform
 	//           --> Fast Matrix Multiplication
@@ -152,7 +152,7 @@ void Spectrogram_Compute(q15_t *samples, q15_t *melvec)
 
 	// /!\ In order to avoid overflows completely the input signals should be scaled down. Scale down one of the input matrices by log2(numColsA) bits to avoid overflows,
 	// as a total of numColsA additions are computed internally for each output element. Because our hz2mel_mat matrix contains lots of zeros in its rows, this is not necessary.
-	start_cycle_count();
+	//start_cycle_count();
 	arm_matrix_instance_q15 hz2mel_inst, fftmag_inst, melvec_inst;
 
 	arm_mat_init_q15(&hz2mel_inst, MELVEC_LENGTH,          SAMPLES_PER_MELVEC / 2, hz2mel_mat);
@@ -160,6 +160,6 @@ void Spectrogram_Compute(q15_t *samples, q15_t *melvec)
 	arm_mat_init_q15(&melvec_inst, MELVEC_LENGTH,          1,                      melvec);
 
 	arm_mat_mult_fast_q15(&hz2mel_inst, &fftmag_inst, &melvec_inst, buf_tmp);
-	stop_cycle_count("Step_4");
+	//stop_cycle_count("Step_4");
 }
 
