@@ -11,6 +11,9 @@ from auth import PRINT_PREFIX
 from .utils import payload_to_melvecs
 import matplotlib.pyplot as plt
 
+N_MELVECS = 20
+MELVEC_LENGTH = 20
+
 def plot_specgram(
     specgram,
     ax,
@@ -106,10 +109,18 @@ def main(
         with open(model, "rb") as file:
             m = pickle.load(file)
             #m = pickle.load("classification/data/models/randomforest_1000.pickle")
+            # poetry run auth | poetry run classify --model path_to_model (use tab)
     else:
         m = None
 
+    CODE_DJ = True
     #m = pickle.load(open("classification/data/models/randomforest_1000.pickle","rb"))
+
+    msg_counter = 0
+    cpt = 0
+    pred_array = []
+    prob_array = []
+
     for payload in _input:
         if PRINT_PREFIX in payload:
             payload = payload[len(PRINT_PREFIX) :]
@@ -123,18 +134,115 @@ def main(
                 # TODO: perform classification
                 fv = melvecs
                 fv = fv.reshape(1,400)
-                print(fv.shape)
-                prediction = m.predict(fv)
-                probas = m.predict_proba(fv)
-                print(probas)
-                print(prediction[0])
-                f, ax = plt.subplots(1, 1, figsize=(10, 5))
-                plot_specgram(
-                    fv.reshape((20, 20)),
-                    ax,
-                    is_mel=True,
-                    title="MEL Spectrogram"
-                )
-                plt.pause(1)
-                plt.clf()
-                pass
+
+                if CODE_DJ:
+    
+                        msg_counter += 1
+                        print("MEL Spectrogram #{}".format(msg_counter))
+                        f, ax = plt.subplots(1, 1, figsize=(10, 5))
+                        plot_specgram(
+                            fv.reshape((N_MELVECS, MELVEC_LENGTH)),
+                            ax,
+                            is_mel=True,
+                            title="MEL Spectrogram #{}".format(cpt),
+                        )
+                        if cpt <= 40:
+                            np.save("Melvecs/birds/n%d.npy"%cpt,fv)
+                            plt.savefig("Figure/birds/%d.pdf"%cpt)
+                        elif cpt <= 80:
+                            np.save("Melvecs/chainsaw/n%d.npy"%(cpt-40),fv)
+                            plt.savefig("Figure/chainsaw/%d.pdf"%(cpt-40))
+                        elif cpt <= 120:
+                            np.save("Melvecs/fire/n%d.npy"%(cpt-80),fv)
+                            plt.savefig("Figure/fire/%d.pdf"%(cpt-80))
+                        elif cpt <= 160:
+                            np.save("Melvecs/handsaw/n%d.npy"%(cpt-120),fv)
+                            plt.savefig("Figure/handsaw/%d.pdf"%(cpt-120))
+                        else:
+                            np.save("Melvecs/helicopter/n%d.npy"%(cpt-160),fv)
+                            plt.savefig("Figure/helicopter/%d.pdf"%(cpt-160))
+
+                        prediction = m.predict(fv)
+                        probas = m.predict_proba(fv)
+                        pred_array.append(prediction[0])
+                        prob_array.append(probas)
+                        cpt+=1
+                        print("Predicted class : ", prediction[0])
+                        print(probas)
+                        if cpt == 40:
+                            with open("Predictions proba/test_birds_probs.txt", "w") as file:
+                                # Iterate through the list and write each element to the file
+                                for item in prob_array:
+                                    file.write(f"{item}\n")
+                            prob_array = []
+
+                            with open("Predictions/test_birds.txt", "w") as file:
+                                # Iterate through the list and write each element to the file
+                                for item in pred_array:
+                                    file.write(f"{item}\n")
+                            pred_array = []
+                        elif cpt == 80:
+                            with open("Predictions/test_chainsaw.txt", "w") as file:
+                                # Iterate through the list and write each element to the file
+                                for item in pred_array:
+                                    file.write(f"{item}\n")
+                            pred_array = []
+
+                            with open("Predictions proba/test_chainsaw_probs.txt", "w") as file:
+                                # Iterate through the list and write each element to the file
+                                for item in prob_array:
+                                    file.write(f"{item}\n")
+                            prob_array = []
+                        elif cpt == 120:
+                            with open("Predictions/test_fire.txt", "w") as file:
+                                # Iterate through the list and write each element to the file
+                                for item in pred_array:
+                                    file.write(f"{item}\n")
+                            pred_array = []
+
+                            with open("Predictions proba/test_fire_probs.txt", "w") as file:
+                                # Iterate through the list and write each element to the file
+                                for item in prob_array:
+                                    file.write(f"{item}\n")
+                            prob_array = []
+                        if cpt == 160:
+                            with open("Predictions/test_handsaw.txt", "w") as file:
+                                # Iterate through the list and write each element to the file
+                                for item in pred_array:
+                                    file.write(f"{item}\n")
+                            pred_array = []
+
+                            with open("Predictions proba/test_handsaw_probs.txt", "w") as file:
+                                # Iterate through the list and write each element to the file
+                                for item in prob_array:
+                                    file.write(f"{item}\n")
+                            prob_array = []
+                        elif cpt == 200:
+                            with open("Predictions/test_helicopter.txt", "w") as file:
+                                # Iterate through the list and write each element to the file
+                                for item in pred_array:
+                                    file.write(f"{item}\n")
+                            pred_array = []
+
+                            with open("Predictions proba/test_helicopter_probs.txt", "w") as file:
+                                # Iterate through the list and write each element to the file
+                                for item in prob_array:
+                                    file.write(f"{item}\n")
+                            prob_array = []
+
+                else:
+                    #print(fv.shape)
+                    prediction = m.predict(fv)
+                    probas = m.predict_proba(fv)
+                    print(probas)
+                    print(prediction[0])
+                    f, ax = plt.subplots(1, 1, figsize=(10, 5))
+                    plot_specgram(
+                        fv.reshape((20, 20)),
+                        ax,
+                        is_mel=True,
+                        title="MEL Spectrogram"
+                    )
+                    plt.pause(1)
+                    plt.clf()
+                    pass

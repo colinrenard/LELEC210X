@@ -8,7 +8,7 @@ options:
     description: ''
     gen_cmake: 'On'
     gen_linking: dynamic
-    generate_options: qt_gui
+    generate_options: no_gui
     hier_block_src_path: '.:'
     id: eval_limesdr_fpga
     max_nouts: '0'
@@ -27,7 +27,7 @@ options:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 8]
+    coordinate: [8, 7]
     rotation: 0
     state: enabled
 
@@ -57,7 +57,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '1'
+    value: '7'
   states:
     bus_sink: false
     bus_source: false
@@ -105,19 +105,19 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '0.005'
+    value: '0.025'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [797, 22]
+    coordinate: [798, 22]
     rotation: 0
     state: true
 - name: estimated_noise_power
   id: variable
   parameters:
     comment: ''
-    value: '3.95e-07'
+    value: '0.00025'
   states:
     bus_sink: false
     bus_source: false
@@ -185,7 +185,7 @@ blocks:
     start: '0'
     step: '1'
     stop: '70'
-    value: '16'
+    value: '20'
     widget: counter_slider
   states:
     bus_sink: false
@@ -198,7 +198,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '30'
+    value: '60'
   states:
     bus_sink: false
     bus_source: false
@@ -256,7 +256,7 @@ blocks:
     bus_structure: null
     coordinate: [320, 204.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: fsk_packet_parser_0
   id: fsk_packet_parser
   parameters:
@@ -295,7 +295,7 @@ blocks:
     bus_structure: null
     coordinate: [320, 380.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: fsk_synchronization_0
   id: fsk_synchronization
   parameters:
@@ -336,7 +336,7 @@ blocks:
     dspcfg_PASSTHROUGH_LEN: (packet_len+1)*8*int(samp_rate/data_rate)+int(samp_rate/data_rate)
       + 1000
     dspcfg_THRESHOLD: K_threshold
-    dspcfg_preamble_en: '1'
+    dspcfg_preamble_en: '0'
     filename: ''
     gain_dB_ch0: rx_gain
     gain_dB_ch1: '1'
@@ -383,7 +383,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [64, 356.0]
+    coordinate: [65, 356]
     rotation: 0
     state: disabled
 - name: zeromq_pub_sink_0
