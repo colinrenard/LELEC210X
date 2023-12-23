@@ -146,17 +146,20 @@ def main(
                             is_mel=True,
                             title="MEL Spectrogram #{}".format(cpt),
                         )
-                        if cpt <= 40:
+                        np.save("Melvecs/%d.npy"%cpt,fv)
+                        plt.savefig("Figure/%d.pdf"%cpt)
+                        cpt +=1
+                        """if cpt <= 40:
                             np.save("Melvecs/birds/n%d.npy"%cpt,fv)
                             plt.savefig("Figure/birds/%d.pdf"%cpt)
                         elif cpt <= 80:
-                            np.save("Melvecs/chainsaw/n%d.npy"%(cpt-40),fv)
-                            plt.savefig("Figure/chainsaw/%d.pdf"%(cpt-40))
+                            np.save("Melvecs/chainsaw/n%d.npy"%(cpt),fv)
+                            plt.savefig("Figure/chainsaw/%d.pdf"%(cpt))
                         elif cpt <= 120:
-                            np.save("Melvecs/fire/n%d.npy"%(cpt-80),fv)
-                            plt.savefig("Figure/fire/%d.pdf"%(cpt-80))
+                            np.save("Melvecs/fire/n%d.npy"%(cpt),fv)
+                            plt.savefig("Figure/fire/%d.pdf"%(cpt))
                         elif cpt <= 160:
-                            np.save("Melvecs/handsaw/n%d.npy"%(cpt-120),fv)
+                            np.save("Melvecs/handsaw/n%d.npy"%(cpt),fv)
                             plt.savefig("Figure/handsaw/%d.pdf"%(cpt-120))
                         else:
                             np.save("Melvecs/helicopter/n%d.npy"%(cpt-160),fv)
@@ -229,7 +232,7 @@ def main(
                                 for item in prob_array:
                                     file.write(f"{item}\n")
                             prob_array = []
-
+                    """
                 else:
                     #print(fv.shape)
                     prediction = m.predict(fv)

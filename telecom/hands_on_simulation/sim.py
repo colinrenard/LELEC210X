@@ -293,6 +293,16 @@ def run_sim(chain):
     ax.set_title("Average Packet Error Rate")
     ax.legend()
 
+    ### [R6] Adding code to save Average Packet Error Rate thoretical and simulation curvess
+    """np.save("PER curve - SNR axis - SNR_simu.npy", SNRs_dB + shift_SNR_out)
+    np.save("PER curve - SNR axis - SNRs_dB.npy", SNRs_dB)
+    np.save("PER curve - SNR axis - SNR_th.npy", SNR_th)
+    np.save("PER curve - Simulation.npy",PER)
+    np.save("Th PER curve - AWGN Th. FSK.npy",1 - (1 - BER_th) ** chain.payload_len)
+    np.save("Th PER curve - AWGN Th. FSK non-coh.npy", 1 - (1 - BER_th_noncoh) ** chain.payload_len)
+    np.save("Th PER curve - AWGN Th. BPSK.npy", 1 - (1 - BER_th_BPSK) ** chain.payload_len)
+    np.save("PER curve - SNR axis - shift_SNR_out.npy",shift_SNR_out)"""
+
     # add second axis
     bool_2_axis = True
     if bool_2_axis:
@@ -308,6 +318,10 @@ def run_sim(chain):
         ax2.set_xlim(ax.get_xlim())
         ax2.xaxis.label.set_color("b")
         ax2.tick_params(axis="x", colors="b")
+
+    """np.save("PER curve - SNR axis - SNR_e.npy", SNRs_dB - shift_SNR_filter + shift_SNR_out)
+    np.save("PER curve - SNR axis - shift_SNR_out.npy",shift_SNR_out)
+    np.save("PER curve - SNR axis - shift_SNR_filter.npy",shift_SNR_filter)"""
 
     # Preamble metrics
     plt.figure()
