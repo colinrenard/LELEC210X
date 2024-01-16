@@ -29,7 +29,7 @@ class Chain:
     sto_val = 0
     sto_range = 10 / BIT_RATE  # defines the delay range when random
 
-    cfo_val = 10 #0
+    cfo_val = 8300 #0
     cfo_range = 10000  # defines the CFO range when random (in Hz) #(1000 in old repo)
 
     snr_range = np.arange(-10, 25)
@@ -124,7 +124,7 @@ class BasicChain(Chain):
     
     name = "Basic Tx/Rx chain"
 
-    cfo_val, sto_val = np.nan, np.nan  # CFO and STO are random
+    #cfo_val, sto_val = np.nan, np.nan  # CFO and STO are random
 
     bypass_preamble_detect = False
 

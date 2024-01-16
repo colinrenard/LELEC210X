@@ -326,7 +326,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [380, 282]
+    coordinate: [387, 239]
     rotation: 0
     state: enabled
 - name: limesdr_fpga_source_0
