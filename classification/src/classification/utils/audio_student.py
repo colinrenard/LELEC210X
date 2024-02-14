@@ -405,7 +405,7 @@ class Feature_vector_DS:
         AudioUtilInst = AudioUtil()
         audio = self.get_audiosignal(cls_index)
         AudioUtilInst.play(audio)
-        plt.figure(figsize=(4, 3))
+        plt.figure(figsize=(10, 5)) # modified from (4,3)
         plt.imshow(
             AudioUtilInst.melspectrogram(audio, Nmel=self.nmel, Nft=self.Nft),
             cmap="jet",
