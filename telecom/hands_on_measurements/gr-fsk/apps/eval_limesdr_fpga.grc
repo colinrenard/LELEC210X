@@ -198,7 +198,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '60'
+    value: '10'
   states:
     bus_sink: false
     bus_source: false
@@ -256,7 +256,7 @@ blocks:
     bus_structure: null
     coordinate: [320, 204.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: fsk_packet_parser_0
   id: fsk_packet_parser
   parameters:
@@ -295,7 +295,7 @@ blocks:
     bus_structure: null
     coordinate: [320, 380.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: fsk_synchronization_0
   id: fsk_synchronization
   parameters:
@@ -336,7 +336,7 @@ blocks:
     dspcfg_PASSTHROUGH_LEN: (packet_len+1)*8*int(samp_rate/data_rate)+int(samp_rate/data_rate)
       + 1000
     dspcfg_THRESHOLD: K_threshold
-    dspcfg_preamble_en: '0'
+    dspcfg_preamble_en: '1'
     filename: ''
     gain_dB_ch0: rx_gain
     gain_dB_ch1: '1'
